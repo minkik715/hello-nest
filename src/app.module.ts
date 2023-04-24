@@ -1,10 +1,19 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
+import { AnimationController } from './animation/animation.controller';
+import { APP_INTERCEPTOR } from '@nestjs/core';
+import { SentryInterceptor } from './sentry.interceptor';
+import { SentryModule } from './sentry/sentry.module';
+import * as Sentry from '@sentry/node';
 
 @Module({
-  imports: [],
-  controllers: [AppController],
-  providers: [AppService],
+  imports: [SentryModule],
+  controllers: [AnimationController],
+  providers: [
+    {
+      provide: APP_INTERCEPTOR,
+      useFactory: () =>
+        Sentry.getCurrentHub().getClient() ? new SentryInterceptor() : null,
+    },
+  ],
 })
 export class AppModule {}
